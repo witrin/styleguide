@@ -26,6 +26,7 @@ use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
+use TYPO3\CMS\Impexp\Import;
 use TYPO3\CMS\Saltedpasswords\Salt\SaltFactory;
 
 /**
@@ -139,6 +140,22 @@ class Generator
                 );
             }
             $generator->handle($mainTable);
+        }
+
+        // Import data from export files
+        try {
+            $files = [
+                'page_layout.xml'
+            ];
+
+            foreach ($files as $fileName) {
+                $file = GeneralUtility::getFileAbsFileName('EXT:styleguide/Resources/Private/Data/' . $fileName);
+                $import = GeneralUtility::makeInstance(Import::class);
+                $import->init();
+                $import->loadFile($file, 1);
+                $import->importData($dataHandler->substNEWwithIDs[$newIdOfEntryPage]);
+            }
+        } catch (\Exception $e) {
         }
     }
 
